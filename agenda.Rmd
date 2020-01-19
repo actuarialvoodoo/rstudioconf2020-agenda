@@ -1,0 +1,104 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r echo=FALSE}
+library(gt)
+
+```
+
+# Day 1
+
+```{r echo=FALSE}
+
+tidy_data[[1]] %>% 
+    dplyr::filter(session == 1) %>%
+    dplyr::select(TimeBlock, Program, Room, Title, Speaker, SpeakerInfo, Abstract) %>%
+    tidyr::pivot_longer(
+        cols = c("Title", "Speaker", "SpeakerInfo", "Abstract"), 
+        names_to = "TalkInfoType", 
+        values_to = "TalkInfoValue"
+    ) %>%
+    dplyr::select(-Room) %>%
+    tidyr::pivot_wider(
+        id_cols = c("TimeBlock", "TalkInfoType"),
+        names_from = "Program",
+        values_from = "TalkInfoValue"
+        
+    ) %>%
+    dplyr::group_by(TimeBlock) %>%
+    gt(rowname_col = c("TalkInfoType")) %>%
+    tab_header(
+        title = "Session 1"
+    ) %>%
+    tab_style(
+        style = cell_text( v_align = "top"),
+        locations = cells_body(
+            rows = TalkInfoType == "Abstract"
+        )
+    )
+    
+```
+
+```{r echo=FALSE}
+tidy_data[[1]] %>% 
+    dplyr::filter(session == 2) %>%
+    dplyr::select(TimeBlock, Program, Room, Title, Speaker, SpeakerInfo, Abstract) %>%
+    tidyr::pivot_longer(
+        cols = c("Title", "Speaker", "SpeakerInfo", "Abstract"), 
+        names_to = "TalkInfoType", 
+        values_to = "TalkInfoValue"
+    ) %>%
+    dplyr::select(-Room) %>%
+    tidyr::pivot_wider(
+        id_cols = c("TimeBlock", "TalkInfoType"),
+        names_from = "Program",
+        values_from = "TalkInfoValue"
+        
+    ) %>%
+    dplyr::group_by(TimeBlock) %>%
+    gt(rowname_col = c("TalkInfoType")) %>%
+    tab_header(
+        title = "Session 2"
+    ) %>%
+    tab_style(
+        style = cell_text( v_align = "top"),
+        locations = cells_body(
+            rows = TalkInfoType == "Abstract"
+        )
+    )
+
+```
+
+
+```{r echo=FALSE}
+tidy_data[[1]] %>% 
+    dplyr::filter(session == 3) %>%
+    dplyr::select(TimeBlock, Program, Room, Title, Speaker, SpeakerInfo, Abstract) %>%
+    tidyr::pivot_longer(
+        cols = c("Title", "Speaker", "SpeakerInfo", "Abstract"), 
+        names_to = "TalkInfoType", 
+        values_to = "TalkInfoValue"
+    ) %>%
+    dplyr::select(-Room) %>%
+    tidyr::pivot_wider(
+        id_cols = c("TimeBlock", "TalkInfoType"),
+        names_from = "Program",
+        values_from = "TalkInfoValue"
+        
+    ) %>%
+    dplyr::group_by(TimeBlock) %>%
+    gt(rowname_col = c("TalkInfoType")) %>%
+    tab_header(
+        title = "Session 3"
+    ) %>%
+    tab_style(
+        style = cell_text( v_align = "top"),
+        locations = cells_body(
+            rows = TalkInfoType == "Abstract"
+        )
+    )
+
+```
+
