@@ -103,18 +103,79 @@ tidy_data[[2]] %>%
     dplyr::group_by(Program) %>% 
     dplyr::count()
 
+
 # looks like Lightning Talks (17), Medicine 3, and Panel (1) are the culprits
 # There are two 5 min Lightning talks, in each 5 mins block from 2:45 to to 3:25
 # and 1 from 3:25 to 3:30 (Are they in the same room?)
 # 
 # The 3 Medicine talks are from 10:53-11:59. The other Program's in it's block
 # Should have a 10:30 to 10:52 slot which is missing
+
+# There was missing information in the medicial category. I have added it and it
+# now has four groups.
+
 # 
 # The Panel is from 2:45 PM - 3:30, which is concurrent with the lightning talks
 # 
 
-#new_ss <- sheets_create(name = "RstudioConf2020-Agenda", sheets = sheet_names)
+# make it one talk per row
+tidy_data[[2]] <- tidy_data[[2]] %>%
+    dplyr::select(-line_num) %>% 
+    tidyr::spread(line_type, new_txt)
 
-#sheets_write(a3, ss = new_ss, sheet = sheet_names[1])
+tidy_data[[2]] <- tidy_data[[2]] %>%
+    dplyr::mutate(start_time = make_datetime(
+        stringr::str_extract(TimeBlock, "^[^-]+"), "2020-01-30")) %>%
+    dplyr::group_by(Program, Room) %>%
+    dplyr::arrange(start_time) %>%
+    dplyr::mutate(
+        time_diff = c(25, diff(start_time)), 
+        start_group = as.integer(time_diff > 23),
+        group = cumsum(start_group)
+    )
+
+library(tidyverse)
+tidy_data[[3]] <- tidy_data[[2]] %>% 
+    ungroup() %>% 
+    filter(Program == "Lightning Talks")
+
+names(tidy_data) <- c(names(tidy_data)[1:2], "30 Jan - Lightning Talks")
+
+tmp_data <- tidy_data[[2]] %>% 
+    ungroup() %>%
+    filter(!(Program %in% "Lightning Talks"))
+
+lightning_talks_keys <- tidy_data[[3]] %>%
+    select(Program, Room, group) %>%
+    unique()
+
+idx <- tmp_data$Program == "Panel"
+tmp_data[idx, c("Abstract", "SpeakerInfo")] <- c(NA_character_, paste0(tmp_data$SpeakerInfo[idx], "\nRstudio"))
+
+max_talk_num <- max(tmp_data$talk_num)
+
+tmp_data <- lightning_talks_keys %>%
+    mutate(talk_num = max_talk_num + seq_len(2), 
+           Abstract = NA_character_, 
+           Speaker = "Various",
+           SpeakerInfo = NA_character_,
+           TimeBlock = tmp_data$TimeBlock[idx],
+           Title = "Various",
+           start_time = tmp_data$start_time[idx],
+           time_diff = tmp_data$time_diff[idx],
+           start_group = tmp_data$start_group[idx]) %>%
+    bind_rows(tmp_data)
+
+sessions <- tmp_data %>%
+    dplyr::group_by(Program, Room, group) %>%
+    dplyr::summarise(min_start_time = min(start_time)) %>%
+    dplyr::arrange(min_start_time, Room) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(session = match(min_start_time, unique(min_start_time)))
+
+tidy_data[[2]] <- tmp_data %>%
+    dplyr::left_join(sessions, by = c("Program", "Room", "group"))
+
+
 
 saveRDS(tidy_data, file = "agenda_data.rds")
