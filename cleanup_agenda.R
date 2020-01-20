@@ -2,8 +2,7 @@ library(googlesheets4)
 library(googledrive)
 
 source("functions.R")
-agenda_raw <- drive_get("Rstudioconf2020-Agenda-raw")
-
+agenda_raw <- drive_get("https://docs.google.com/spreadsheets/d/1EFBHBTeN1gX0xCa2Xxj1q59fOMeg5PsEpq0UPz6qffc/edit?usp=sharing")
 sheet_names <- sheets_sheet_names(agenda_raw)
 
 raw_data <- sheet_names %>%
